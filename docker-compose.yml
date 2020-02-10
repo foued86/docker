@@ -1,0 +1,42 @@
+version: '2.0'
+
+services:
+  db:
+    container_name: docker_database
+    image: mysql
+    ports:
+      - 3307:3307 
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+  
+  phpmyadmin:
+    container_name: docker_phpmyadmin
+    image: phpmyadmin/phpmyadmin
+    links:
+      - db
+    ports:
+      - 8181:80
+  
+  php:
+    container_name: docker_web
+    build: php7-fpm
+    ports:
+      - 9000:9000
+    links:
+      - db:mysqldb
+    volumes:
+      - .:/var/www/app
+  nginx:
+    container_name: docker_nginx
+    build: nginx
+    ports:
+      - 81:80
+    links:
+      - php
+    volumes_from:
+      - php
+    volumes:
+      - ./logs/nginx/:/var/log/nginx
